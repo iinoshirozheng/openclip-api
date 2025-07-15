@@ -5,3 +5,4 @@ test_image/
 *.pyc
 venv/
 .env
+.DS_Store
