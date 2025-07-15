@@ -31,21 +31,20 @@ jobs:
           # 為映像設定一個固定的標籤
           tags: openclip-api:latest
 
-      # 步驟 4: 將 Docker 映像儲存成 tar.gz 壓縮檔
-      - name: Save and compress Docker image
-        run: docker save openclip-api:latest | gzip > openclip-api-latest.tar.gz
+      # --- 修改點 1: 只儲存成 .tar，不壓縮 ---
+      - name: Save Docker image as .tar
+        run: docker save openclip-api:latest > openclip-api-latest.tar
 
       # 步驟 5: 建立或更新 Release，並上傳映像檔
       - name: Create or Update Release with Artifact
         uses: softprops/action-gh-release@v1
         with:
           # 使用一個固定的 tag 來標示這個 Release
-          # 這會讓 action 持續更新同一個 Release
           tag_name: latest-master-build
           name: "Latest Master Build"
           body: |
             This release contains the latest Docker image built from the master branch.
             Last updated: ${{ github.event.head_commit.timestamp }}
             Commit: ${{ github.event.head_commit.message }}
-          # 要上傳的檔案
-          files: openclip-api-latest.tar.gz
+          # --- 修改點 2: 上傳 .tar 檔案 ---
+          files: openclip-api-latest.tar
