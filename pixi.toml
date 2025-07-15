@@ -1,0 +1,21 @@
+[workspace]
+authors = ["Ray <ruihung.cheng@sinopac.com>"]
+name = "openclip-api"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
+version = "0.1.0"
+
+[tasks]
+serve = "uvicorn main:app --host 0.0.0.0 --port 6789"
+
+[dependencies]
+python = "3.11.*"
+pip = "*"
+
+[pypi-dependencies]
+fastapi = "*"
+uvicorn = "*"
+open-clip-torch = "*"
+torchvision = "*"
+pillow = "*"
+python-multipart = "*"

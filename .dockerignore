@@ -1,0 +1,7 @@
+# pixi environments
+__pycache__/
+test_image/
+.pixi/
+*.pyc
+venv/
+.env

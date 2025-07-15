@@ -1,0 +1,6 @@
+# pixi environments
+__pycache__/
+.pixi/
+*.pyc
+venv/
+.env
