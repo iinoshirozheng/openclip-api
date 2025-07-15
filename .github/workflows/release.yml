@@ -1,51 +1,51 @@
-name: Build and Release Docker Image
+name: Build and Release Latest Docker Image
 
-# 這個工作流程只在建立新的 Release 時觸發
+# 在每次推送到 master 分支時觸發
 on:
-  release:
-    types: [created]
+  push:
+    branches: [ "master" ]
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 授予上傳 release asset 的權限
+      contents: write # 授予 action 建立/更新 Release 的權限
 
     steps:
       # 步驟 1: 取得專案的程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 步驟 2: 設定 Docker Buildx，這是 Docker 官方推薦的建置工具
+      # 步驟 2: 設定 Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       # 步驟 3: 使用 Dockerfile 建置映像
       - name: Build Docker image
-        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          # 只建置，不推送到 Docker Hub
           push: false
-          # 將建置好的映像載入到 runner 的 docker 中，以便後續操作
           load: true
-          # 為映像設定一個標籤，方便後續引用
+          # 為映像設定一個固定的標籤
           tags: openclip-api:latest
 
-      # 步驟 4: 將 Docker 映像儲存成 tar 檔並用 gzip 壓縮
+      # 步驟 4: 將 Docker 映像儲存成 tar.gz 壓縮檔
       - name: Save and compress Docker image
-        run: docker save openclip-api:latest | gzip > openclip-api.tar.gz
+        run: docker save openclip-api:latest | gzip > openclip-api-latest.tar.gz
 
-      # 步驟 5: 上傳壓縮後的映像檔到 GitHub Release
-      - name: Upload to Release
-        uses: actions/upload-release-asset@v1
+      # 步驟 5: 建立或更新 Release，並上傳映像檔
+      - name: Create or Update Release with Artifact
+        uses: softprops/action-gh-release@v1
         with:
-          # 這個 URL 是由 `on: release` 事件自動提供的
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./openclip-api.tar.gz
-          asset_name: openclip-api.tar.gz
-          asset_content_type: application/gzip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 使用一個固定的 tag 來標示這個 Release
+          # 這會讓 action 持續更新同一個 Release
+          tag_name: latest-master-build
+          name: "Latest Master Build"
+          body: |
+            This release contains the latest Docker image built from the master branch.
+            Last updated: ${{ github.event.head_commit.timestamp }}
+            Commit: ${{ github.event.head_commit.message }}
+          # 要上傳的檔案
+          files: openclip-api-latest.tar.gz
